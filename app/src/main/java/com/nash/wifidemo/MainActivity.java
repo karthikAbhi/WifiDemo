@@ -46,7 +46,6 @@ public class MainActivity extends AppCompatActivity {
         mWM = (WifiManager) getApplicationContext().
                 getSystemService(Context.WIFI_SERVICE);
 
-
         mEnableButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

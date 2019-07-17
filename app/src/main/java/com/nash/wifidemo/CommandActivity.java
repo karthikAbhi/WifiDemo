@@ -1,11 +1,8 @@
 package com.nash.wifidemo;
 
-import android.bluetooth.BluetoothDevice;
-import android.content.BroadcastReceiver;
 import android.content.ClipData;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
@@ -24,6 +21,15 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 
+import com.nash.mywifiprinterlibrary.BarcodeType;
+import com.nash.mywifiprinterlibrary.CutCommand;
+import com.nash.mywifiprinterlibrary.FunctionType;
+import com.nash.mywifiprinterlibrary.MyWifiPrinter;
+import com.nash.mywifiprinterlibrary.PDF417ErrorCorrectionLevel;
+import com.nash.mywifiprinterlibrary.PDF417ErrorCorrectionMode;
+import com.nash.mywifiprinterlibrary.PDF417Options;
+import com.nash.mywifiprinterlibrary.QRErrCorrLvl;
+
 import java.io.IOException;
 import java.util.Calendar;
 
@@ -33,9 +39,7 @@ public class CommandActivity extends AppCompatActivity {
 
 
     private static final String TAG = "CommandActivity";
-    private BluetoothDevice mBTDevice;
-    private static ConnectThread mConnectThread;
-    private MyBluetoothPrinter mMyBluetoothPrinter;
+    private MyWifiPrinter mMyWifiPrinter;
     private Context mContext;
 
     // --- UI - Button References ---
@@ -166,18 +170,9 @@ public class CommandActivity extends AppCompatActivity {
 
         mContext = getApplicationContext();
 
-        mMyBluetoothPrinter = new MyBluetoothPrinter(mContext) {
-            @Override
-            public void transfer(byte[] dataToPrintInBytes) {
-                try {
-                    CommandActivity.getConnectThread().writeData(dataToPrintInBytes);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        };
+        mMyWifiPrinter = new MyWifiPrinter(mContext);
 
-        connectBTDevice();
+        /*connectBTDevice();
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(BluetoothDevice.ACTION_FOUND);
@@ -185,7 +180,7 @@ public class CommandActivity extends AppCompatActivity {
         filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED);
         filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
         filter.addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
-        this.registerReceiver(mReceiver, filter);
+        this.registerReceiver(mReceiver, filter);*/
 
         mCloseBTN = findViewById(R.id.closeBTN);
 
@@ -360,18 +355,18 @@ public class CommandActivity extends AppCompatActivity {
             }
         });
 
-        mDiscoverBTN.setOnClickListener(new View.OnClickListener() {
+        /*mDiscoverBTN.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 discoverBTDevices();
             }
-        });
+        });*/
 
         //Basic Print Command
         mPrintButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMyBluetoothPrinter.printText(mSampleTextEditText.getText().toString());
+                mMyWifiPrinter.printText(mSampleTextEditText.getText().toString());
             }
         });
 
@@ -379,67 +374,67 @@ public class CommandActivity extends AppCompatActivity {
         mPDFF2FEditText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMyBluetoothPrinter.ESC_J(mPDFF2FEditText.getText().toString());
+                mMyWifiPrinter.ESC_J(mPDFF2FEditText.getText().toString());
             }
         });//Print data and feed a line (14.01)
         mLFCommandButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMyBluetoothPrinter.LF();
+                mMyWifiPrinter.LF();
             }
         });
         //Print data and feed a page on page mode (14.02)
         mFFCommandButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMyBluetoothPrinter.FF();
+                mMyWifiPrinter.FF();
             }
         });
         //Print data on page mode (14.03)
         mPDPMCommandButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMyBluetoothPrinter.ESC_FF();
+                mMyWifiPrinter.ESC_FF();
             }
         });
         //Print data and feed the form to forward (14.04)
         mPDFF2FCommandButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMyBluetoothPrinter.ESC_J(mPDFF2FEditText.getText().toString());
+                mMyWifiPrinter.ESC_J(mPDFF2FEditText.getText().toString());
             }
         });
         //Print data and feed n lines (14.05)
         mPDFNLCommandButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMyBluetoothPrinter.ESC_D(mPDFNLEditText.getText().toString());
+                mMyWifiPrinter.ESC_D(mPDFNLEditText.getText().toString());
             }
         });
         mSLFCommandButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMyBluetoothPrinter.ESC_3(mSLFEditText.getText().toString());
+                mMyWifiPrinter.ESC_3(mSLFEditText.getText().toString());
             }
         });
         mSGRSCCommandButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMyBluetoothPrinter.ESC_SP(mSGRSCEditText.getText().toString());
+                mMyWifiPrinter.ESC_SP(mSGRSCEditText.getText().toString());
             }
         });
         //Need to implement parameters
         mSPPMCommandButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMyBluetoothPrinter.ESC_PM(mSPPMEditText.getText().toString());
+                mMyWifiPrinter.ESC_PM(mSPPMEditText.getText().toString());
             }
         });
         //Need to implement parameters
         mSelectFontCommandButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMyBluetoothPrinter.ESC_M(mSelectFontEditText.getText().toString());
+                mMyWifiPrinter.ESC_M(mSelectFontEditText.getText().toString());
             }
         });
         //TODO - Praveen need to provide more information
@@ -448,7 +443,7 @@ public class CommandActivity extends AppCompatActivity {
             public void onClick(View v) {
                 byte[] a = new byte[1];
                 a[0] = (byte)0;//Default - 0
-                mMyBluetoothPrinter.ESC_T(a);
+                mMyWifiPrinter.ESC_T(a);
             }
         });*/
         //TODO - Need to talk to Reddy sir
@@ -463,7 +458,7 @@ public class CommandActivity extends AppCompatActivity {
         mSetOrUnsetDCSCommandButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMyBluetoothPrinter.ESC_SDC(mSetOrUnsetDCSEditText.getText().toString());
+                mMyWifiPrinter.ESC_SDC(mSetOrUnsetDCSEditText.getText().toString());
             }
         });*/
 
@@ -471,34 +466,34 @@ public class CommandActivity extends AppCompatActivity {
         mPMCommandButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMyBluetoothPrinter.PAGE_MODE();
+                mMyWifiPrinter.PAGE_MODE();
             }
         });
 
         mSMCommandButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMyBluetoothPrinter.STANDARD_MODE();
+                mMyWifiPrinter.STANDARD_MODE();
             }
         });
         mHTCommandButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMyBluetoothPrinter.HT();
+                mMyWifiPrinter.HT();
             }
         });
         //Set the left side margin Command (14.16)
         mSetLeftMarginCommandButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMyBluetoothPrinter.GS_L(mSetLeftMarginEditText.getText().toString());
+                mMyWifiPrinter.GS_L(mSetLeftMarginEditText.getText().toString());
             }
         });
         //Set the width of print area Command (14.17)
         mSetWidthOfPrintAreaCommandButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMyBluetoothPrinter.GS_W(mSetWidthOfPrintAreaEditText.getText().toString());
+                mMyWifiPrinter.GS_W(mSetWidthOfPrintAreaEditText.getText().toString());
             }
         });
         //Set the print area on page mode (14.18)
@@ -506,7 +501,7 @@ public class CommandActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                mMyBluetoothPrinter.ESC_W(mSPAPMxaxisEditText.getText().toString(),
+                mMyWifiPrinter.ESC_W(mSPAPMxaxisEditText.getText().toString(),
                         mSPAPMyaxisEditText.getText().toString(),
                         mSPAPMxlengthEditText.getText().toString(),
                         mSPAPMylengthEditText.getText().toString());
@@ -516,14 +511,14 @@ public class CommandActivity extends AppCompatActivity {
         mSetPhysicalPositionCommandButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMyBluetoothPrinter.ESC_PP(mSetPhysicalPositionEditText.getText().toString());
+                mMyWifiPrinter.ESC_PP(mSetPhysicalPositionEditText.getText().toString());
             }
         });
         //Set the logical position (14.20)
         mSetLogicalPositionCommandButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMyBluetoothPrinter.ESC_LP(mSetLogicalPositionEditText.getText().toString());
+                mMyWifiPrinter.ESC_LP(mSetLogicalPositionEditText.getText().toString());
             }
         });
         //Set the vertical physical position in page mode (14.21)
@@ -531,7 +526,7 @@ public class CommandActivity extends AppCompatActivity {
                 setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        mMyBluetoothPrinter.GS_VPP(mSetVerticalPhysicalPositionOnPageModeEditText.
+                        mMyWifiPrinter.GS_VPP(mSetVerticalPhysicalPositionOnPageModeEditText.
                                 getText().toString());
                     }
                 });
@@ -540,7 +535,7 @@ public class CommandActivity extends AppCompatActivity {
                 setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        mMyBluetoothPrinter.GS_VLP(mSetVerticalLogicalPositionOnPageModeEditText.
+                        mMyWifiPrinter.GS_VLP(mSetVerticalLogicalPositionOnPageModeEditText.
                                 getText().toString());
                     }
                 });
@@ -563,7 +558,7 @@ public class CommandActivity extends AppCompatActivity {
         mPrintNVBitImageCommandButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMyBluetoothPrinter.FS_PP(mSelectPNVBitEditText.getText().toString(),
+                mMyWifiPrinter.FS_PP(mSelectPNVBitEditText.getText().toString(),
                         mModePNVBitEditText.getText().toString());
             }
         });
@@ -571,7 +566,7 @@ public class CommandActivity extends AppCompatActivity {
         mSelectNVBitImageCommandButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMyBluetoothPrinter.FS_PS(mSelectSNVBitEditText.getText().toString(),
+                mMyWifiPrinter.FS_PS(mSelectSNVBitEditText.getText().toString(),
                         mModeSNVBitEditText.getText().toString(),
                         mOffsetSNVBitEditText.getText().toString());
             }
@@ -600,7 +595,7 @@ public class CommandActivity extends AppCompatActivity {
         mSelectLSB_MSBDirectionInImageCommandButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMyBluetoothPrinter.DC2_DIR(mSelectLSB_MSBDirectionInImageEditText.
+                mMyWifiPrinter.DC2_DIR(mSelectLSB_MSBDirectionInImageEditText.
                         getText().toString());
             }
         });
@@ -609,7 +604,7 @@ public class CommandActivity extends AppCompatActivity {
         mSetPrintPositionOfHRICharCommandButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMyBluetoothPrinter.GS_H(mSetPrintPositionOfHRICharEditText.getText().toString());
+                mMyWifiPrinter.GS_H(mSetPrintPositionOfHRICharEditText.getText().toString());
             }
         });
 
@@ -617,7 +612,7 @@ public class CommandActivity extends AppCompatActivity {
         mSelectHRICharacterSizeCommandButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMyBluetoothPrinter.GS_F(mSelectHRICharacterSizeEditText.getText().toString());
+                mMyWifiPrinter.GS_F(mSelectHRICharacterSizeEditText.getText().toString());
             }
         });
 
@@ -625,7 +620,7 @@ public class CommandActivity extends AppCompatActivity {
         mSetBarcodeHeightCommandButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMyBluetoothPrinter.GS_h(mSetBarcodeHeightEditText.getText().toString());
+                mMyWifiPrinter.GS_h(mSetBarcodeHeightEditText.getText().toString());
             }
         });
 
@@ -633,7 +628,7 @@ public class CommandActivity extends AppCompatActivity {
         mSetBarcodeWidthCommandButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMyBluetoothPrinter.GS_w(mSetBarcodeWidthEditText.getText().toString());
+                mMyWifiPrinter.GS_w(mSetBarcodeWidthEditText.getText().toString());
             }
         });
 
@@ -641,7 +636,7 @@ public class CommandActivity extends AppCompatActivity {
         mSetNWAspectBarcode.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMyBluetoothPrinter.DC2_ARB(mSetNWAspectBarcodeEditText.getText().toString());
+                mMyWifiPrinter.DC2_ARB(mSetNWAspectBarcodeEditText.getText().toString());
             }
         });
 
@@ -670,31 +665,31 @@ public class CommandActivity extends AppCompatActivity {
 
                 switch (mBarcodeTypeSelected) {
                     case 0:
-                        mMyBluetoothPrinter.GS_k(BarcodeType.UPC_A, mBarcodeDataEditText.getText().toString());
+                        mMyWifiPrinter.GS_k(BarcodeType.UPC_A, mBarcodeDataEditText.getText().toString());
                         break;
                     case 1:
-                        mMyBluetoothPrinter.GS_k(BarcodeType.UPC_E, mBarcodeDataEditText.getText().toString());
+                        mMyWifiPrinter.GS_k(BarcodeType.UPC_E, mBarcodeDataEditText.getText().toString());
                         break;
                     case 2:
-                        mMyBluetoothPrinter.GS_k(BarcodeType.JAN13, mBarcodeDataEditText.getText().toString());
+                        mMyWifiPrinter.GS_k(BarcodeType.JAN13, mBarcodeDataEditText.getText().toString());
                         break;
                     case 3:
-                        mMyBluetoothPrinter.GS_k(BarcodeType.JAN8, mBarcodeDataEditText.getText().toString());
+                        mMyWifiPrinter.GS_k(BarcodeType.JAN8, mBarcodeDataEditText.getText().toString());
                         break;
                     case 4:
-                        mMyBluetoothPrinter.GS_k(BarcodeType.CODE39, mBarcodeDataEditText.getText().toString());
+                        mMyWifiPrinter.GS_k(BarcodeType.CODE39, mBarcodeDataEditText.getText().toString());
                         break;
                     case 5:
-                        mMyBluetoothPrinter.GS_k(BarcodeType.ITF, mBarcodeDataEditText.getText().toString());
+                        mMyWifiPrinter.GS_k(BarcodeType.ITF, mBarcodeDataEditText.getText().toString());
                         break;
                     case 6:
-                        mMyBluetoothPrinter.GS_k(BarcodeType.CODABAR, mBarcodeDataEditText.getText().toString());
+                        mMyWifiPrinter.GS_k(BarcodeType.CODABAR, mBarcodeDataEditText.getText().toString());
                         break;
                     case 7:
-                        mMyBluetoothPrinter.GS_k(BarcodeType.CODE93, mBarcodeDataEditText.getText().toString());
+                        mMyWifiPrinter.GS_k(BarcodeType.CODE93, mBarcodeDataEditText.getText().toString());
                         break;
                     default:
-                        mMyBluetoothPrinter.GS_k(BarcodeType.UPC_A, mBarcodeDataEditText.getText().toString());
+                        mMyWifiPrinter.GS_k(BarcodeType.UPC_A, mBarcodeDataEditText.getText().toString());
                         break;
                 }
 
@@ -737,7 +732,7 @@ public class CommandActivity extends AppCompatActivity {
         mInitializePrinterCommandButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMyBluetoothPrinter.ESC_INIT();
+                mMyWifiPrinter.ESC_INIT();
             }
         });
 
@@ -745,7 +740,7 @@ public class CommandActivity extends AppCompatActivity {
         mSetPrintDensity.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMyBluetoothPrinter.DC2_PD(mSetPrintDensityEditText.getText().toString());
+                mMyWifiPrinter.DC2_PD(mSetPrintDensityEditText.getText().toString());
             }
         });
 
@@ -755,7 +750,7 @@ public class CommandActivity extends AppCompatActivity {
         mGSMFCommandButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMyBluetoothPrinter.GS_MF();
+                mMyWifiPrinter.GS_MF();
             }
         });
 
@@ -763,7 +758,7 @@ public class CommandActivity extends AppCompatActivity {
         mCutFormCommandButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMyBluetoothPrinter.ESC_I();
+                mMyWifiPrinter.ESC_I();
             }
         });
 
@@ -779,7 +774,7 @@ public class CommandActivity extends AppCompatActivity {
                 a[4] = (byte) Calendar.getInstance().get(Calendar.MONTH);//d5 - month
                 a[5] = (byte) Calendar.getInstance().get(Calendar.YEAR);//d6 - year
 
-                mMyBluetoothPrinter.GS_i(a);
+                mMyWifiPrinter.GS_i(a);
             }
         });
 
@@ -789,7 +784,7 @@ public class CommandActivity extends AppCompatActivity {
         mFFIPIXELSCommandButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMyBluetoothPrinter.GS_d(mFFIPIXELSEditText.getText().toString());
+                mMyWifiPrinter.GS_d(mFFIPIXELSEditText.getText().toString());
             }
         });
 
@@ -797,14 +792,14 @@ public class CommandActivity extends AppCompatActivity {
         mtUOnOffCommandButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMyBluetoothPrinter.ESC_hyphen(mUnderLineEditText.getText().toString());
+                mMyWifiPrinter.ESC_hyphen(mUnderLineEditText.getText().toString());
             }
         });
         //Select default line spacing (14.71)
         mSDLSCommandButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMyBluetoothPrinter.ESC_2();
+                mMyWifiPrinter.ESC_2();
             }
         });
 
@@ -812,7 +807,7 @@ public class CommandActivity extends AppCompatActivity {
         mTEMOnOffCommandButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMyBluetoothPrinter.ESC_E(mTEMOnOffEditText.getText().toString());
+                mMyWifiPrinter.ESC_E(mTEMOnOffEditText.getText().toString());
             }
         });
 
@@ -820,7 +815,7 @@ public class CommandActivity extends AppCompatActivity {
         mSPDPMCommandButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMyBluetoothPrinter.ESC_T(mSPDPMCommandButton.getText().toString());
+                mMyWifiPrinter.ESC_T(mSPDPMCommandButton.getText().toString());
             }
         });
 
@@ -828,7 +823,7 @@ public class CommandActivity extends AppCompatActivity {
         mSJCommandButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMyBluetoothPrinter.ESC_a(mSJEditText.getText().toString());
+                mMyWifiPrinter.ESC_a(mSJEditText.getText().toString());
             }
         });
 
@@ -839,16 +834,16 @@ public class CommandActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (mRadioButtonQR.getText().toString().equals("L")) {
-                    mMyBluetoothPrinter.QrCode(mQRSizeEditText.getText().toString(), QRErrCorrLvl.L,
+                    mMyWifiPrinter.QrCode(mQRSizeEditText.getText().toString(), QRErrCorrLvl.L,
                             mQRUserDataEditText.getText().toString());
                 } else if (mRadioButtonQR.getText().toString().equals("M")) {
-                    mMyBluetoothPrinter.QrCode(mQRSizeEditText.getText().toString(), QRErrCorrLvl.M,
+                    mMyWifiPrinter.QrCode(mQRSizeEditText.getText().toString(), QRErrCorrLvl.M,
                             mQRUserDataEditText.getText().toString());
                 } else if (mRadioButtonQR.getText().toString().equals("Q")) {
-                    mMyBluetoothPrinter.QrCode(mQRSizeEditText.getText().toString(), QRErrCorrLvl.Q,
+                    mMyWifiPrinter.QrCode(mQRSizeEditText.getText().toString(), QRErrCorrLvl.Q,
                             mQRUserDataEditText.getText().toString());
                 } else if (mRadioButtonQR.getText().toString().equals("H")) {
-                    mMyBluetoothPrinter.QrCode(mQRSizeEditText.getText().toString(), QRErrCorrLvl.H,
+                    mMyWifiPrinter.QrCode(mQRSizeEditText.getText().toString(), QRErrCorrLvl.H,
                             mQRUserDataEditText.getText().toString());
                 }
             }
@@ -859,7 +854,7 @@ public class CommandActivity extends AppCompatActivity {
         mPDBICommandButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMyBluetoothPrinter.GS_FS(mPDBIEditText.getText().toString());
+                mMyWifiPrinter.GS_FS(mPDBIEditText.getText().toString());
             }
         });*/
 
@@ -867,7 +862,7 @@ public class CommandActivity extends AppCompatActivity {
         mTurnWBRPOnOffCommandButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMyBluetoothPrinter.GS_B(mTurnWBRPOnOffEditText.getText().toString());
+                mMyWifiPrinter.GS_B(mTurnWBRPOnOffEditText.getText().toString());
             }
         });
 
@@ -877,19 +872,19 @@ public class CommandActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if (mRadioButtonCT.getText().toString().equals("Full Cut")) {
                     if (mRadioButtonFT.getText().toString().equals("A")) {
-                        mMyBluetoothPrinter.GS_V(FunctionType.A, CutCommand.FULLCUT, mSCMCPEditText.getText().toString());
+                        mMyWifiPrinter.GS_V(FunctionType.A, CutCommand.FULLCUT, mSCMCPEditText.getText().toString());
                     } else if (mRadioButtonFT.getText().toString().equals("B")) {
-                        mMyBluetoothPrinter.GS_V(FunctionType.B, CutCommand.FULLCUT, mSCMCPEditText.getText().toString());
+                        mMyWifiPrinter.GS_V(FunctionType.B, CutCommand.FULLCUT, mSCMCPEditText.getText().toString());
                     } else if (mRadioButtonFT.getText().toString().equals("C")) {
-                        mMyBluetoothPrinter.GS_V(FunctionType.C, CutCommand.FULLCUT, mSCMCPEditText.getText().toString());
+                        mMyWifiPrinter.GS_V(FunctionType.C, CutCommand.FULLCUT, mSCMCPEditText.getText().toString());
                     }
                 } else if (mRadioButtonCT.getText().toString().equals("Partial Cut")) {
                     if (mRadioButtonFT.getText().toString().equals("A")) {
-                        mMyBluetoothPrinter.GS_V(FunctionType.A, CutCommand.PARTIALCUT, mSCMCPEditText.getText().toString());
+                        mMyWifiPrinter.GS_V(FunctionType.A, CutCommand.PARTIALCUT, mSCMCPEditText.getText().toString());
                     } else if (mRadioButtonFT.getText().toString().equals("B")) {
-                        mMyBluetoothPrinter.GS_V(FunctionType.B, CutCommand.PARTIALCUT, mSCMCPEditText.getText().toString());
+                        mMyWifiPrinter.GS_V(FunctionType.B, CutCommand.PARTIALCUT, mSCMCPEditText.getText().toString());
                     } else if (mRadioButtonFT.getText().toString().equals("C")) {
-                        mMyBluetoothPrinter.GS_V(FunctionType.C, CutCommand.PARTIALCUT, mSCMCPEditText.getText().toString());
+                        mMyWifiPrinter.GS_V(FunctionType.C, CutCommand.PARTIALCUT, mSCMCPEditText.getText().toString());
                     }
                 }
             }
@@ -900,7 +895,7 @@ public class CommandActivity extends AppCompatActivity {
         mPrintButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMyBluetoothPrinter.printText(mSampleTextEditText.getText().toString());
+                mMyWifiPrinter.printText(mSampleTextEditText.getText().toString());
                 //printer.printAdditionalBarcode(ExtraBarcodeType.CODE128, "500", "300",
                 //       "0905", ImageMode.NORMAL);
                 //TODO: UI
@@ -922,7 +917,7 @@ public class CommandActivity extends AppCompatActivity {
         mPDF417CommandButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMyBluetoothPrinter.printPDF417("3",
+                mMyWifiPrinter.printPDF417("3",
                         "10",
                         PDF417ErrorCorrectionMode.LEVEL,
                         PDF417ErrorCorrectionLevel.LEVEL0,
@@ -936,7 +931,7 @@ public class CommandActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 byte[] dataReceivedFromPrinter = new byte[16];  //For Understanding purpose only
-                dataReceivedFromPrinter = mMyBluetoothPrinter.controlTransfer();
+                dataReceivedFromPrinter = mMyWifiPrinter.controlTransfer();
                 Toast.makeText(getApplicationContext(), dataReceivedFromPrinter.toString(),
                         Toast.LENGTH_SHORT).show();
             }
@@ -949,103 +944,37 @@ public class CommandActivity extends AppCompatActivity {
     /**
      * Discover Devices and connect automatically if device connection is lost unexpectedly
      */
-    private void discoverBTDevices(){
-        if(MainActivity.mBluetoothAdapter.isEnabled()){
-            if(MainActivity.mBluetoothAdapter.isDiscovering()){
-                MainActivity.mBluetoothAdapter.cancelDiscovery();
-            }
-            else{
-                try {
-                    MainActivity.mBluetoothAdapter.startDiscovery();
-                    Thread.sleep(3000);
-                    MainActivity.mBluetoothAdapter.cancelDiscovery();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
+    private void discoverWifiDevices(){
+
     }
 
     /**
      * Broadcast Receiver to listen for all the actions specified in the Intent Filter
      */
-    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
 
-            BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-
-            if(BluetoothDevice.ACTION_FOUND.equals(action)){
-                //Device Found
-                if(device.equals(mBTDevice)){
-                    Log.i("BT", "Found");
-                    Toast.makeText(getApplicationContext(),"Device Found!",
-                            Toast.LENGTH_SHORT)
-                            .show();
-                    establishConnection(device);
-
-                }
-            }
-            else if(BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)){
-                mDiscoverBTN.setVisibility(View.INVISIBLE);
-                Log.i("BT", "ACTION_ACL_CONNECTED");
-                Toast.makeText(getApplicationContext(),"Action ACL Connected!",
-                        Toast.LENGTH_SHORT).show();
-                if(device.equals(mBTDevice)){
-                    Log.i("BT", "Found");
-                    Toast.makeText(getApplicationContext(),"Device Connected!",
-                            Toast.LENGTH_SHORT).show();
-                }
-            }
-            else if(BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED.equals(action)){
-                Log.i("BT", "ACTION_ACL_DISCONNECT_REQUESTED");
-                Toast.makeText(getApplicationContext(),"ACTION_ACL_DISCONNECT_REQUESTED!",
-                        Toast.LENGTH_SHORT).show();
-            }
-            else if(BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)){
-                mDiscoverBTN.setVisibility(View.VISIBLE);
-                Log.i("BT", "ACTION_ACL_DISCONNECTED");
-                Toast.makeText(getApplicationContext(),"ACTION_ACL_DISCONNECTED",
-                        Toast.LENGTH_SHORT).show();
-                if(device.equals(mBTDevice)){
-                    if(device.equals(mBTDevice)){
-                        Log.i("BT", "Found");
-                        Toast.makeText(getApplicationContext(),
-                                "Device Disconnected!\n" + mBTDevice.getName(), Toast.LENGTH_SHORT)
-                                .show();
-                    }
-                }
-            }
-            else{
-                Toast.makeText(getApplicationContext(),"Something is broadcasted!",
-                        Toast.LENGTH_SHORT).show();
-            }
-        }
-    };
 
     /**
      * Finish the BT connection by releasing all the resources and go to MainActivity
      */
     private void closeIntent(){
-        mConnectThread.cancel();
+        mMyWifiPrinter.close(); 
         Intent intent = new Intent(getApplicationContext(), MainActivity.class);
         startActivity(intent);
         this.finish();
     }
-
-    /**
+/*
+    *//**
      * Get the selected BT Device from BTSelection Activity and BT establishConnection
-     */
+     *//*
     private void connectBTDevice(){
         mBTDevice = BTSelectionActivity.getBluetoothDevice();
         establishConnection(mBTDevice);
     }
 
-    /**
+    *//**
      * Establish BT connection with BT device provided
      * @param device - BT Device
-     */
+     *//*
     private void establishConnection(BluetoothDevice device){
         mConnectThread = new ConnectThread(device, MainActivity.mBluetoothAdapter);
         new Thread(mConnectThread).start();
@@ -1053,7 +982,7 @@ public class CommandActivity extends AppCompatActivity {
 
     protected static ConnectThread getConnectThread(){
         return mConnectThread;
-    }
+    }*/
 
     /***
      * Supporting Methods
@@ -1104,7 +1033,7 @@ public class CommandActivity extends AppCompatActivity {
             if(extras != null){
                 //Get Image from Gallery
                 Bitmap bmp = extras.getParcelable("data");
-                mMyBluetoothPrinter.GS_v(bmp, mModeOfRasterBitEditText.getText().toString());
+                mMyWifiPrinter.GS_v(bmp, mModeOfRasterBitEditText.getText().toString());
             }
         }
         //NV Bit Image Selection
@@ -1124,7 +1053,7 @@ public class CommandActivity extends AppCompatActivity {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                mMyBluetoothPrinter.FS_Q(new Bitmap[]{bitmap}, mNumberOfNVBitImagesEditText.
+                mMyWifiPrinter.FS_Q(new Bitmap[]{bitmap}, mNumberOfNVBitImagesEditText.
                         getText().toString());
             }
             //Case 2:
@@ -1144,7 +1073,7 @@ public class CommandActivity extends AppCompatActivity {
                         e.printStackTrace();
                     }
                 }
-                mMyBluetoothPrinter.FS_Q(bitmapArray, mNumberOfNVBitImagesEditText.
+                mMyWifiPrinter.FS_Q(bitmapArray, mNumberOfNVBitImagesEditText.
                         getText().toString());
             }
             else{
@@ -1189,8 +1118,8 @@ public class CommandActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if(mMyBluetoothPrinter == null){
-            //mMyBluetoothPrinter = MyBluetoothPrinter.getInstance(context);
+        if(mMyWifiPrinter == null){
+            //mMyWifiPrinter = MyBluetoothPrinter.getInstance(context);
         }
     }
 
@@ -1226,6 +1155,5 @@ public class CommandActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(mReceiver);
     }
 }

@@ -17,13 +17,16 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidParameterException;
 
-public abstract class MyBluetoothPrinter {
+public class MyWifiPrinter {
 
-    private static final String TAG = "MyBluetoothPrinter";
+    private static final String TAG = "MyWifiPrinter";
     //Nash Printer Command Reference
     Command myCommand = new Command();
     //Command Validator
     Validator mValidator = new Validator();
+
+    NPOSWifiConnection mNPOSWifiConnection;
+
 
     //TODO - Change the complete dependencies from USB to Bluetooth
     //Android Components
@@ -33,8 +36,11 @@ public abstract class MyBluetoothPrinter {
     private int nCurrentSubset;
 
     //Constructor to find and initialise the printer connection
-    public MyBluetoothPrinter(Context context) {
+    public MyWifiPrinter(Context context) {
         mContext = context;
+        if(mNPOSWifiConnection == null){
+            mNPOSWifiConnection = NPOSWifiConnection.getInstance(mContext,"192.168.4.1", 23);
+        }
     }
 
     public final void printText(String dataToPrint){transfer(dataToPrint);}
@@ -53,7 +59,13 @@ public abstract class MyBluetoothPrinter {
     }
 
     //Process USB Bulk Transfer
-    public abstract void transfer(final byte[] dataToPrintInBytes);
+    public synchronized void transfer(final byte[] dataToPrintInBytes){
+        if(mNPOSWifiConnection == null){
+            mNPOSWifiConnection = NPOSWifiConnection.getInstance(mContext,"192.168.4.1", 23);
+        }
+        mNPOSWifiConnection.t.write(dataToPrintInBytes);
+        //Toast.makeText(mContext, mNPOSWifiConnection.read().toString(), Toast.LENGTH_SHORT).show();
+    }
 
     /**
     * Image Related methods
@@ -269,9 +281,18 @@ public abstract class MyBluetoothPrinter {
     //Print raster bit image (14.24) (With Parameter)
     public void GS_v(Bitmap bmp, String n){
         if(mValidator.check(n, 0, 3)){
-            transfer(myCommand.GS_v);
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            try {
+                out.write(myCommand.GS_v);
+                out.write(convertStringToByteArray(n));
+                out.write(Utils_1.decodeRasterBitImage(Utils.floydSteinbergDithering(bmp)));
+                transfer(out.toByteArray());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            /*transfer(myCommand.GS_v);
             transfer(convertStringToByteArray(n));
-            transfer(Utils_1.decodeRasterBitImage(Utils.floydSteinbergDithering(bmp)));
+            transfer(Utils_1.decodeRasterBitImage(Utils.floydSteinbergDithering(bmp)));*/
         }
     }
     //Print NV Bit Image (14.25) (With Parameter)
@@ -493,9 +514,6 @@ public abstract class MyBluetoothPrinter {
 
                 transfer(out.toByteArray());
 
-                out.reset();
-                out.close();
-
                 //TODO: Remember sometimes individual byte transfer may not work properly so use the above method
             }
         }catch (Exception e){
@@ -531,7 +549,7 @@ public abstract class MyBluetoothPrinter {
             if (functionType.equals(FunctionType.C)) {
                 if (mode == CutCommand.FULLCUT) {
                     if (mValidator.check(n, 0, 255)) {
-                        out.write(myCommand.GS_B);
+                        out.write(myCommand.GS_V);
                         out.write(new byte[]{0x61});
                         out.write(convertStringToByteArray(n));
                         transfer(out.toByteArray());
@@ -1013,5 +1031,9 @@ public abstract class MyBluetoothPrinter {
         }
         // return the modulus
         return (nSum % 103);
+    }
+
+    public void close() {
+        mNPOSWifiConnection = null;
     }
 }

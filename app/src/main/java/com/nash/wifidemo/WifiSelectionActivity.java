@@ -5,7 +5,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.wifi.ScanResult;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -14,7 +16,13 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,6 +35,12 @@ public class WifiSelectionActivity extends AppCompatActivity {
 
     private ListView mListView;
     ArrayAdapter<String> mWifiDevicesAdapter;
+
+    BufferedOutputStream out;
+    BufferedInputStream in;
+    Socket socket;
+
+    private byte[] commandBuffer = new byte[512];
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +67,24 @@ public class WifiSelectionActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 String deviceName = mDeviceList.get(position);
                 Log.i(TAG, deviceName);
+                WifiInfo info = mWM.getConnectionInfo();
+                Toast.makeText(getApplicationContext(),
+                        "MAC address:"+ info.getMacAddress()+"\n"+
+                                "IP address:"+ info.getIpAddress(),
+                        Toast.LENGTH_SHORT).show();
+                Log.i(TAG, String.valueOf(info));
+
+                /*new ConnectThread().execute();
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    write("Helloworld\n".getBytes());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }*/
                 Intent intent = new Intent(getApplicationContext(), CommandActivity.class);
                 startActivity(intent);
                 finish();
