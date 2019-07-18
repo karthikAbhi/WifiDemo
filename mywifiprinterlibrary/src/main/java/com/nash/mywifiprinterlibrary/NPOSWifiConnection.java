@@ -21,17 +21,13 @@ public class NPOSWifiConnection {
     public static RWThread t;
     private static String mHost;
     private static int mPort;
-    private Context mContext;
-    private boolean flag = false;
 
     /**
      * Singleton Constructor
-     * @param context
      * @param host
      * @param port
      */
-    private NPOSWifiConnection(Context context,String host, int port) {
-        mContext = context;
+    private NPOSWifiConnection(String host, int port) {
         mHost = host;
         mPort = port;
         new InitializeConnection().execute();
@@ -40,14 +36,13 @@ public class NPOSWifiConnection {
 
     /**
      * Singleton Pattern
-     * @param context
      * @param host
      * @param port
      * @return
      */
-    public synchronized static NPOSWifiConnection getInstance(Context context, String host, int port) {
+    public synchronized static NPOSWifiConnection getInstance(String host, int port) {
         if (sNPOSWifiConnection == null) {
-            sNPOSWifiConnection = new NPOSWifiConnection(context, host, port);
+            sNPOSWifiConnection = new NPOSWifiConnection( host, port);
         }
         return sNPOSWifiConnection;
     }
@@ -60,7 +55,6 @@ public class NPOSWifiConnection {
         @Override
         protected Void doInBackground(Void... voids) {
 
-            //sNPOSWifiConnection.connect();
             try {
                 if (mSocket == null) {
 

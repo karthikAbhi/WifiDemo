@@ -33,7 +33,7 @@ import com.nash.mywifiprinterlibrary.QRErrCorrLvl;
 import java.io.IOException;
 import java.util.Calendar;
 
-//Nash - USB library package for Android
+//Nash - Wi-Fi library package for Android
 
 public class CommandActivity extends AppCompatActivity {
 
@@ -62,9 +62,6 @@ public class CommandActivity extends AppCompatActivity {
     private Button mSGRSCCommandButton;
     private Button mSPPMCommandButton;
     private Button mSelectFontCommandButton;
-    //private Button mSelCharCodeTableCommandButton;
-    private Button mSpecifyDownldCharCommandButton;
-    private Button mSetOrUnsetDCSCommandButton;
     private Button mSetLeftMarginCommandButton;
     private Button mSetWidthOfPrintAreaCommandButton;
     private Button mSpecifyPrintAreaOnPageModeCommandButton;
@@ -80,7 +77,6 @@ public class CommandActivity extends AppCompatActivity {
     private Button mSetNWAspectBarcode;
     private Button mPrintBarcodeButton;
     private Button mSetPrintDensity;
-    //private Button mSpecifyResponseParameterCommandButton;
     private Button mInformSysTimeOfHostCommandButton;
     private Button mPrintBitImageCommandButton;
     private Button mPrintRasterBitImageCommandButton;
@@ -93,7 +89,6 @@ public class CommandActivity extends AppCompatActivity {
     private Button mSPDPMCommandButton;
     private Button mSJCommandButton;
     private Button mQRCodeCommandButton;
-    private Button mPDBICommandButton;
     private Button mTurnWBRPOnOffCommandButton;
     private Button mSCMCPCommandButton;
     private Button mPDF417CommandButton;
@@ -122,13 +117,10 @@ public class CommandActivity extends AppCompatActivity {
     private EditText mSGRSCEditText;
     private EditText mSPPMEditText;
     private EditText mSelectFontEditText;
-    private EditText mSelCharCodeTableEditText;
-    private EditText mSpecifyDownldCharEditText;
-    private EditText mSetOrUnsetDCSEditText;
     private EditText mSetLeftMarginEditText;
     private EditText mSetWidthOfPrintAreaEditText;
     private EditText mSPAPMxaxisEditText, mSPAPMyaxisEditText, mSPAPMxlengthEditText,
-            mSPAPMylengthEditText;//mSpecifyPrintAreaOnPageModeEditText
+            mSPAPMylengthEditText;
     private EditText mSetPhysicalPositionEditText;
     private EditText mSetLogicalPositionEditText;
     private EditText mSetVerticalPhysicalPositionOnPageModeEditText;
@@ -148,20 +140,18 @@ public class CommandActivity extends AppCompatActivity {
     private EditText mSetNWAspectBarcodeEditText;
     private EditText mBarcodeDataEditText;
     private EditText mSetPrintDensityEditText;
-    private EditText mSpecifyResponseParameterEditText;
-    private EditText mInformSysTimeOfHostEditText;
     private EditText mFFIPIXELSEditText;
     private EditText mUnderLineEditText;
     private EditText mTEMOnOffEditText;
     private EditText mSPDPMEditText;
     private EditText mSJEditText;
     private EditText mQRSizeEditText, mQRUserDataEditText;
-    private EditText mPDBIEditText;
     private EditText mTurnWBRPOnOffEditText;
     private EditText mSCMCPEditText;
 
     //TODO Control Transfer
     private EditText mControlTransferEditText;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -171,16 +161,6 @@ public class CommandActivity extends AppCompatActivity {
         mContext = getApplicationContext();
 
         mMyWifiPrinter = new MyWifiPrinter(mContext);
-
-        /*connectBTDevice();
-
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(BluetoothDevice.ACTION_FOUND);
-        filter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
-        filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED);
-        filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
-        filter.addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
-        this.registerReceiver(mReceiver, filter);*/
 
         mCloseBTN = findViewById(R.id.closeBTN);
 
@@ -196,7 +176,6 @@ public class CommandActivity extends AppCompatActivity {
         mSGRSCEditText = findViewById(R.id.sgrscEditText);
         mSPPMEditText = findViewById(R.id.sppmEditText);
         mSelectFontEditText = findViewById(R.id.selFontEditText);
-        //mSetOrUnsetDCSEditText = findViewById(R.id.setOrUnsetDCSetEditText);
         mSetLeftMarginEditText = findViewById(R.id.setLeftMarginEditText);
         mSetWidthOfPrintAreaEditText = findViewById(R.id.setWidthOfPrintAreaEditText);
         mSPAPMxaxisEditText = findViewById(R.id.spapmxaxisEditText);
@@ -229,7 +208,6 @@ public class CommandActivity extends AppCompatActivity {
         mSJEditText = findViewById(R.id.selectJustificationEditText);
         mQRSizeEditText = findViewById(R.id.qrSizeEditText);
         mQRUserDataEditText = findViewById(R.id.qrUserDataEditText);
-        //mPDBIEditText = findViewById(R.id.printDownldBitImgEditText);
         mTurnWBRPOnOffEditText = findViewById(R.id.turnBlackWhiteRevPrintModeOnOffEditText);
         mSCMCPEditText = findViewById(R.id.selectCutModeCutPaperEditText);
 
@@ -256,12 +234,6 @@ public class CommandActivity extends AppCompatActivity {
         mSPPMCommandButton = findViewById(R.id.sppmButton);
         //Select the font Command (14.09)
         mSelectFontCommandButton = findViewById(R.id.selFontButton);
-        //Select character code table Command (14.10)
-        //mSelCharCodeTableCommandButton = findViewById(R.id.selCharCodeTableButton);
-        //Specify download character Command (14.11)
-        //mSpecifyDownldCharCommandButton = findViewById(R.id.specifyDownldCharButton);
-        //Set or unset download character set Command (14.12)
-        //mSetOrUnsetDCSCommandButton = findViewById(R.id.setOrUnsetDCSetButton);
         //Page Mode Command (14.13)
         mPMCommandButton = findViewById(R.id.pageModeButton);
         //Standard Mode Command (14.14)
@@ -355,13 +327,6 @@ public class CommandActivity extends AppCompatActivity {
             }
         });
 
-        /*mDiscoverBTN.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                discoverBTDevices();
-            }
-        });*/
-
         //Basic Print Command
         mPrintButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -437,32 +402,6 @@ public class CommandActivity extends AppCompatActivity {
                 mMyWifiPrinter.ESC_M(mSelectFontEditText.getText().toString());
             }
         });
-        //TODO - Praveen need to provide more information
-        /*mSelCharCodeTableCommandButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                byte[] a = new byte[1];
-                a[0] = (byte)0;//Default - 0
-                mMyWifiPrinter.ESC_T(a);
-            }
-        });*/
-        //TODO - Need to talk to Reddy sir
-        /*mSpecifyDownldCharCommandButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //Will be implemented later
-                Toast.makeText(getApplicationContext(),"Will be implemented later",
-                        Toast.LENGTH_SHORT).show();
-            }
-        });
-        mSetOrUnsetDCSCommandButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mMyWifiPrinter.ESC_SDC(mSetOrUnsetDCSEditText.getText().toString());
-            }
-        });*/
-
-
         mPMCommandButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -692,39 +631,6 @@ public class CommandActivity extends AppCompatActivity {
                         mMyWifiPrinter.GS_k(BarcodeType.UPC_A, mBarcodeDataEditText.getText().toString());
                         break;
                 }
-
-                /*switch(mBarcodeTypeSelected){
-                    case 0: printer.GS_k(BarcodeType.UPC_A, "72527273070");
-                        break;
-                    case 1: printer.GS_k(BarcodeType.UPC_E, "01150000066");
-                        break;
-                    case 2: printer.GS_k(BarcodeType.JAN13, "122245678931");
-                        break;
-                    case 3: printer.GS_k(BarcodeType.JAN8, "1245678");
-                        break;
-                    case 4: printer.GS_k(BarcodeType.CODE39, "1AE% ");
-                        break;
-                    case 5: printer.GS_k(BarcodeType.ITF, "1456");
-                        break;
-                    case 6: printer.GS_k(BarcodeType.CODABAR, "A12345A");
-                        break;
-                    case 7: printer.GS_k(BarcodeType.CODE93, "A12345A");
-                        break;
-                    default: printer.GS_k(BarcodeType.UPC_A, "72527273070");
-                        break;
-                }*/
-
-                //printBarcode();
-                //printer.GS_k(BarcodeType.UPC_A, "72527273070");
-                //printer.GS_k(BarcodeType.UPC_E, "01150000066");
-                //printer.GS_k(BarcodeType.JAN13, "122245678931");
-                //printer.GS_k(BarcodeType.JAN8, "1245678");
-                //printer.GS_k(BarcodeType.CODE39, "1AE% ");
-                //printer.GS_k(BarcodeType.ITF, "1456");
-                //printer.GS_k(BarcodeType.CODABAR, "A12345A");
-                //printer.GS_k(BarcodeType.CODE93, "A12345A");
-
-
             }
         });
 
@@ -815,7 +721,7 @@ public class CommandActivity extends AppCompatActivity {
         mSPDPMCommandButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMyWifiPrinter.ESC_T(mSPDPMCommandButton.getText().toString());
+                mMyWifiPrinter.ESC_T(mSPDPMEditText.getText().toString());
             }
         });
 
@@ -848,15 +754,6 @@ public class CommandActivity extends AppCompatActivity {
                 }
             }
         });
-
-
-        /*//Print downloaded bit image (14.77)
-        mPDBICommandButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mMyWifiPrinter.GS_FS(mPDBIEditText.getText().toString());
-            }
-        });*/
 
         //Turn white/black reverse print mode on/off (14.78)
         mTurnWBRPOnOffCommandButton.setOnClickListener(new View.OnClickListener() {
@@ -942,19 +839,12 @@ public class CommandActivity extends AppCompatActivity {
     }
 
     /**
-     * Discover Devices and connect automatically if device connection is lost unexpectedly
-     */
-    private void discoverWifiDevices(){
-
-    }
-
-    /**
      * Broadcast Receiver to listen for all the actions specified in the Intent Filter
      */
 
 
     /**
-     * Finish the BT connection by releasing all the resources and go to MainActivity
+     * Finish the Wifi connection by releasing all the resources and go to MainActivity
      */
     private void closeIntent(){
         mMyWifiPrinter.close(); 
@@ -962,27 +852,6 @@ public class CommandActivity extends AppCompatActivity {
         startActivity(intent);
         this.finish();
     }
-/*
-    *//**
-     * Get the selected BT Device from BTSelection Activity and BT establishConnection
-     *//*
-    private void connectBTDevice(){
-        mBTDevice = BTSelectionActivity.getBluetoothDevice();
-        establishConnection(mBTDevice);
-    }
-
-    *//**
-     * Establish BT connection with BT device provided
-     * @param device - BT Device
-     *//*
-    private void establishConnection(BluetoothDevice device){
-        mConnectThread = new ConnectThread(device, MainActivity.mBluetoothAdapter);
-        new Thread(mConnectThread).start();
-    }
-
-    protected static ConnectThread getConnectThread(){
-        return mConnectThread;
-    }*/
 
     /***
      * Supporting Methods
@@ -1115,7 +984,7 @@ public class CommandActivity extends AppCompatActivity {
         Toast.makeText(this, "QR Correction Level: "+ mRadioButtonQR.getText(), Toast.LENGTH_SHORT).show();
     }
 
-    @Override
+   /* @Override
     protected void onResume() {
         super.onResume();
         if(mMyWifiPrinter == null){
@@ -1155,5 +1024,5 @@ public class CommandActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-    }
+    }*/
 }

@@ -20,26 +20,24 @@ import java.security.InvalidParameterException;
 public class MyWifiPrinter {
 
     private static final String TAG = "MyWifiPrinter";
+
     //Nash Printer Command Reference
-    Command myCommand = new Command();
-    //Command Validator
-    Validator mValidator = new Validator();
+    private Command myCommand = new Command();
+    //Command Validator reference
+    private Validator mValidator = new Validator();
+    //NPOS Wifi Connection reference
+    private NPOSWifiConnection mNPOSWifiConnection;
 
-    NPOSWifiConnection mNPOSWifiConnection;
-
-
-    //TODO - Change the complete dependencies from USB to Bluetooth
     //Android Components
 
-    Context mContext;
-
+    private Context mContext;
     private int nCurrentSubset;
 
     //Constructor to find and initialise the printer connection
     public MyWifiPrinter(Context context) {
         mContext = context;
         if(mNPOSWifiConnection == null){
-            mNPOSWifiConnection = NPOSWifiConnection.getInstance(mContext,"192.168.4.1", 23);
+            mNPOSWifiConnection = NPOSWifiConnection.getInstance("192.168.4.1", 23);
         }
     }
 
@@ -61,7 +59,7 @@ public class MyWifiPrinter {
     //Process USB Bulk Transfer
     public synchronized void transfer(final byte[] dataToPrintInBytes){
         if(mNPOSWifiConnection == null){
-            mNPOSWifiConnection = NPOSWifiConnection.getInstance(mContext,"192.168.4.1", 23);
+            mNPOSWifiConnection = NPOSWifiConnection.getInstance("192.168.4.1", 23);
         }
         mNPOSWifiConnection.t.write(dataToPrintInBytes);
         //Toast.makeText(mContext, mNPOSWifiConnection.read().toString(), Toast.LENGTH_SHORT).show();
@@ -875,7 +873,7 @@ public class MyWifiPrinter {
             e.printStackTrace();
         }
     }
-
+    //TODO: Needs more clarity
     private int checkDigit(String userData){
 
         int nSum = 0, nCode128Char, nNextChar, nWeight;
